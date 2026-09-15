@@ -1,0 +1,24 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { LoaderCircle } from "lucide-react";
+import { BhashaHireApp } from "@/components/bhasha/bhasha-hire-app";
+import type { AuthSession } from "@/lib/auth";
+
+export function AuthenticatedApp() {
+  const [session, setSession] = useState<AuthSession | null | undefined>(undefined);
+
+  useEffect(() => {
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((result) => {
+        if (!result.session) window.location.replace("/login");
+        else if (!result.session.role) window.location.replace("/choose-role");
+        else setSession(result.session);
+      })
+      .catch(() => window.location.replace("/login?error=session_check_failed"));
+  }, []);
+
+  if (!session) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] text-[#196b4f]"><LoaderCircle className="size-9 animate-spin" aria-label="Checking sign-in" /></main>;
+  return <BhashaHireApp session={session} />;
+}

@@ -9,13 +9,17 @@ import {
   Globe2,
   GraduationCap,
   LayoutDashboard,
+  LogOut,
   Mic,
+  Repeat2,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AppLanguage, Screen } from "@/lib/product-types";
+import type { AuthSession } from "@/lib/auth";
+import Image from "next/image";
 
 export const copy = {
   en: {
@@ -43,7 +47,7 @@ const navItems: { screen: Screen; icon: typeof Mic; key: keyof typeof copy.en }[
   { screen: "interview", icon: GraduationCap, key: "prep" },
 ];
 
-export function AppHeader({ language, screen, initials, onLanguage, onNavigate }: { language: AppLanguage; screen: Screen; initials: string; onLanguage: () => void; onNavigate: (screen: Screen) => void }) {
+export function AppHeader({ language, screen, initials, session, onLanguage, onNavigate, onLogout, onChangeRole }: { language: AppLanguage; screen: Screen; initials: string; session: AuthSession; onLanguage: () => void; onNavigate: (screen: Screen) => void; onLogout: () => void; onChangeRole: () => void }) {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[#dce4dc] bg-white/90 backdrop-blur-xl">
@@ -57,8 +61,10 @@ export function AppHeader({ language, screen, initials, onLanguage, onNavigate }
           </nav>
           <div className="flex items-center justify-end gap-2">
             <Button onClick={onLanguage} variant="outline" className="h-10 rounded-full border-[#d6dfd7] bg-white px-3 text-[#294b41]" aria-label={language === "hi" ? "Switch interface to English" : "इंटरफ़ेस हिंदी में करें"}><Globe2 /> <span className="hidden sm:inline">{language === "hi" ? "हिन्दी · EN" : "English · हिं"}</span></Button>
-            <Button onClick={() => onNavigate("counsellor")} variant="ghost" size="icon" className="size-10 rounded-full text-[#52665e]" aria-label={copy[language].counsellor}><ShieldCheck /></Button>
-            <button onClick={() => onNavigate("profile")} className="grid size-10 place-items-center rounded-full bg-[#e5f2b5] text-sm font-black text-[#17332d]" aria-label="Candidate profile">{initials}</button>
+            {session.role === "counsellor" && <Button onClick={() => onNavigate("counsellor")} variant="ghost" size="icon" className="size-10 rounded-full text-[#52665e]" aria-label={copy[language].counsellor}><ShieldCheck /></Button>}
+            <button onClick={onChangeRole} className="hidden min-h-10 items-center gap-2 rounded-full bg-[#edf3ee] px-3 text-xs font-black capitalize text-[#294b41] sm:flex" aria-label="Change workspace role"><Repeat2 className="size-3.5" />{session.role}</button>
+            <button onClick={() => session.role === "counsellor" ? onNavigate("counsellor") : onNavigate("profile")} className="grid size-10 place-items-center overflow-hidden rounded-full bg-[#e5f2b5] text-sm font-black text-[#17332d]" aria-label={`${session.name} account`}>{session.picture ? <Image src={session.picture} width={40} height={40} unoptimized referrerPolicy="no-referrer" alt="" className="size-full object-cover" /> : initials}</button>
+            <Button onClick={onLogout} variant="ghost" size="icon" className="hidden size-10 rounded-full text-[#6e7d77] sm:inline-flex" aria-label="Sign out"><LogOut /></Button>
           </div>
         </div>
       </header>

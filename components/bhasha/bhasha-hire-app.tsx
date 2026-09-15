@@ -17,16 +17,22 @@ import { profileExtractor } from "@/lib/ai";
 import { getMatches } from "@/lib/matching";
 import type { AppLanguage, CandidateProfile, OpportunityMatch, Screen } from "@/lib/product-types";
 import { useBhashaWebMcp } from "@/hooks/use-bhasha-webmcp";
+import { getBackendMatches } from "@/lib/backend-client";
+import type { AuthSession } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
-export function BhashaHireApp() {
+export function BhashaHireApp({ session }: { session: AuthSession }) {
+  const router = useRouter();
   const [language, setLanguage] = useState<AppLanguage>("hi");
-  const [screen, setScreen] = useState<Screen>("welcome");
+  const [screen, setScreen] = useState<Screen>(session.role === "counsellor" ? "counsellor" : "welcome");
   const [captureMode, setCaptureMode] = useState<"voice" | "type">("voice");
   const [profile, setProfile] = useState<CandidateProfile>(demoCandidates[0]);
+  const [expectedProfile, setExpectedProfile] = useState<CandidateProfile>(demoCandidates[0]);
   const [pendingTranscript, setPendingTranscript] = useState(profile.transcript);
   const [selectedMatchId, setSelectedMatchId] = useState<string>("");
+  const [matches, setMatches] = useState<OpportunityMatch[]>(() => getMatches(profile));
+  const [sessionStartedAt] = useState(() => Date.now());
 
-  const matches = useMemo(() => getMatches(profile), [profile]);
   const currentMatch = useMemo(
     () => matches.find((match) => match.opportunity.id === selectedMatchId) ?? matches.find((match) => match.eligible) ?? matches[0],
     [matches, selectedMatchId],
@@ -40,6 +46,11 @@ export function BhashaHireApp() {
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [screen]);
   useEffect(() => { document.documentElement.lang = language === "hi" ? "hi" : "en"; }, [language]);
+  useEffect(() => {
+    let current = true;
+    getBackendMatches(profile).then((results) => { if (current && results.length) setMatches(results); }).catch(() => { if (current) setMatches(getMatches(profile)); });
+    return () => { current = false; };
+  }, [profile]);
 
   const start = useCallback((mode: "voice" | "type" = "voice") => {
     setCaptureMode(mode);
@@ -48,6 +59,7 @@ export function BhashaHireApp() {
 
   const startDemo = useCallback((candidate: CandidateProfile) => {
     setProfile(candidate);
+    setExpectedProfile(candidate);
     setPendingTranscript(candidate.transcript);
     setSelectedMatchId("");
     navigate("processing");
@@ -82,14 +94,20 @@ export function BhashaHireApp() {
 
   const headerNavigate = useCallback((next: Screen) => {
     if (next === "interview" && !currentMatch) return;
+    if (next === "counsellor" && session.role !== "counsellor") return;
     navigate(next);
-  }, [currentMatch, navigate]);
+  }, [currentMatch, navigate, session.role]);
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  };
 
   useBhashaWebMcp({ onStart: start, onDemo: startDemoById, onNavigate: headerNavigate });
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_50%_4%,#ffffff_0,#f6f7f2_34%,#eef2eb_100%)] text-[#17332d]">
-      <AppHeader language={language} screen={screen} initials={profile.initials} onLanguage={() => setLanguage((value) => value === "hi" ? "en" : "hi")} onNavigate={headerNavigate} />
+      <AppHeader language={language} screen={screen} initials={profile.initials} session={session} onLanguage={() => setLanguage((value) => value === "hi" ? "en" : "hi")} onNavigate={headerNavigate} onLogout={logout} onChangeRole={() => router.push("/choose-role")} />
       <div key={screen} className="animate-screen-in">
         {screen === "welcome" && <WelcomeScreen language={language} onStart={start} onDemo={startDemo} />}
         {screen === "voice" && <VoiceScreen language={language} initialMode={captureMode} onBack={() => navigate("welcome")} onUse={useRecording} onDemo={() => startDemo(demoCandidates[0])} />}
@@ -100,7 +118,7 @@ export function BhashaHireApp() {
         {screen === "resume" && <ResumeScreen language={language} profile={profile} onBack={() => navigate("profile")} onInterview={() => navigate("interview")} onComplete={() => navigate("complete")} />}
         {screen === "interview" && interviewMatch && <InterviewScreen language={language} profile={profile} match={interviewMatch} onBack={() => navigate("matches")} onComplete={() => navigate("complete")} />}
         {screen === "complete" && <CompleteScreen language={language} profile={profile} matches={matches} onMatches={() => navigate("matches")} onResume={() => navigate("resume")} onInterview={() => navigate("interview")} onCounsellor={() => navigate("counsellor")} />}
-        {screen === "counsellor" && <CounsellorScreen language={language} profile={profile} matches={matches} onBack={() => navigate("profile")} onResume={() => navigate("resume")} />}
+        {screen === "counsellor" && session.role === "counsellor" && <CounsellorScreen language={language} profile={profile} expectedProfile={expectedProfile} matches={matches} onMatchesChange={setMatches} sessionStartedAt={sessionStartedAt} onBack={() => navigate("profile")} onResume={() => navigate("resume")} />}
       </div>
     </main>
   );

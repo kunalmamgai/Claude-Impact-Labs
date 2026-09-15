@@ -5,6 +5,7 @@ import { ArrowLeft, BriefcaseBusiness, Check, Download, FileText, GraduationCap,
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AppLanguage, CandidateProfile } from "@/lib/product-types";
+import { candidateToUserProfile } from "@/lib/backend-client";
 
 type ResumeLanguage = "bilingual" | "english" | "hindi";
 
@@ -12,6 +13,7 @@ export function ResumeScreen({ language, profile, onBack, onInterview, onComplet
   const hi = language === "hi";
   const [resumeLanguage, setResumeLanguage] = useState<ResumeLanguage>("bilingual");
   const [shared, setShared] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const showEnglish = resumeLanguage !== "hindi";
   const showHindi = resumeLanguage !== "english";
   const experienceTitle = profile.trade === "office" ? "Community records support" : profile.trade === "fitter" ? "Supervised workshop practice" : "Community & household electrical practice";
@@ -27,9 +29,21 @@ export function ResumeScreen({ language, profile, onBack, onInterview, onComplet
     } catch { /* User cancelled share. */ }
   };
 
+  const downloadPdf = async () => {
+    setDownloading(true);
+    try {
+      const response = await fetch("/api/resume/generate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile: candidateToUserProfile(profile), language: resumeLanguage }) });
+      if (!response.ok) throw new Error("PDF generation failed");
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a"); link.href = url; link.download = `${profile.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-resume.pdf`; link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+    } catch { window.print(); }
+    finally { setDownloading(false); }
+  };
+
   return (
     <div className="mx-auto w-full max-w-[1420px] px-4 pb-28 pt-7 sm:px-7 lg:px-12 lg:pt-9">
-      <div className="no-print mb-5 flex flex-wrap items-center justify-between gap-3"><button onClick={onBack} className="inline-flex min-h-10 items-center gap-2 rounded-xl pr-3 text-sm font-extrabold text-[#557067] hover:bg-[#e9f1ea]"><ArrowLeft className="size-4" />{hi ? "वापस" : "Back"}</button><div className="flex flex-wrap gap-2"><Button onClick={share} variant="outline" className="min-h-11 rounded-xl border-[#cad8cd] bg-white font-black text-[#294b41]">{shared ? <Check /> : <Share2 />}{shared ? (hi ? "कॉपी हो गया" : "Copied") : (hi ? "शेयर करें" : "Share")}</Button><Button onClick={() => window.print()} className="min-h-11 rounded-xl bg-[#196b4f] px-5 font-black"><Download />{hi ? "PDF डाउनलोड / प्रिंट" : "Download / Print PDF"}</Button></div></div>
+      <div className="no-print mb-5 flex flex-wrap items-center justify-between gap-3"><button onClick={onBack} className="inline-flex min-h-10 items-center gap-2 rounded-xl pr-3 text-sm font-extrabold text-[#557067] hover:bg-[#e9f1ea]"><ArrowLeft className="size-4" />{hi ? "वापस" : "Back"}</button><div className="flex flex-wrap gap-2"><Button onClick={share} variant="outline" className="min-h-11 rounded-xl border-[#cad8cd] bg-white font-black text-[#294b41]">{shared ? <Check /> : <Share2 />}{shared ? (hi ? "कॉपी हो गया" : "Copied") : (hi ? "शेयर करें" : "Share")}</Button><Button disabled={downloading} onClick={downloadPdf} className="min-h-11 rounded-xl bg-[#196b4f] px-5 font-black"><Download />{downloading ? (hi ? "PDF बन रहा है…" : "Generating PDF…") : (hi ? "PDF डाउनलोड" : "Download PDF")}</Button></div></div>
       <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-black uppercase tracking-[.11em] text-[#5c8173]">{hi ? "कदम 4 / 4 · आपका रिज़्यूमे" : "Step 4 of 4 · Your resume"}</p><h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[-.04em] sm:text-5xl">{hi ? "एक पेज। दो भाषाएँ। आपकी सच्ची कहानी।" : "One page. Two languages. Your real story."}</h1><p className="mt-3 text-[15px] leading-7 text-[#687a72]">{hi ? "अनौपचारिक काम को हमने ईमानदारी से practical experience लिखा है—पेशेवर नौकरी नहीं।" : "Your informal work is honestly presented as practical experience—not invented employment."}</p></div><Tabs value={resumeLanguage} onValueChange={(value) => setResumeLanguage(value as ResumeLanguage)}><TabsList className="h-auto rounded-xl bg-[#e8eee9] p-1"><TabsTrigger value="bilingual" className="min-h-10 rounded-lg px-3 font-black data-[state=active]:bg-white">EN + हिं</TabsTrigger><TabsTrigger value="english" className="min-h-10 rounded-lg px-3 font-black data-[state=active]:bg-white">English</TabsTrigger><TabsTrigger value="hindi" className="min-h-10 rounded-lg px-3 font-black data-[state=active]:bg-white">हिन्दी</TabsTrigger></TabsList></Tabs></div>
 
       <div className="grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">

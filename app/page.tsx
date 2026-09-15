@@ -1,5 +1,5 @@
-import { BhashaHireApp } from "@/components/bhasha/bhasha-hire-app";
+import { AuthenticatedApp } from "@/components/bhasha/authenticated-app";
 
 export default function Home() {
-  return <BhashaHireApp />;
+  return <AuthenticatedApp />;
 }
