@@ -82,6 +82,7 @@ function backendToProduct(match: BackendMatch): OpportunityMatch {
     requirements,
     matchedCount: requirements.filter((item) => item.status === "met").length,
     missing: requirements.filter((item) => item.status === "missing"),
+    needsInfo: requirements.filter((item) => item.status === "unknown"),
   };
 }
 

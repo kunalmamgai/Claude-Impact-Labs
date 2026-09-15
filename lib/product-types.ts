@@ -111,4 +111,5 @@ export interface OpportunityMatch {
   requirements: AssessedRequirement[];
   matchedCount: number;
   missing: AssessedRequirement[];
+  needsInfo: AssessedRequirement[];
 }

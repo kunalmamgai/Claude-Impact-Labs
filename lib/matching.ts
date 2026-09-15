@@ -46,10 +46,12 @@ function assessRequirement(candidate: CandidateProfile, requirement: Opportunity
 export function assessOpportunity(candidate: CandidateProfile, opportunity: Opportunity): OpportunityMatch {
   const requirements = opportunity.requirements.map((requirement) => assessRequirement(candidate, requirement));
   // A listing is only shown as eligible when every stated condition is met.
-  // Unknown evidence is intentionally not treated as a pass.
+  // Unknown evidence is intentionally not treated as a pass, and it is surfaced separately
+  // so users and counsellors can see what needs verification before a decision.
   const eligible = requirements.every((requirement) => requirement.status === "met");
   const met = requirements.filter((requirement) => requirement.status === "met").length;
-  const relevanceScore = Math.max(48, Math.min(98, Math.round(50 + (met / requirements.length) * 45 - (eligible ? 0 : 8))));
+  const unknown = requirements.filter((requirement) => requirement.status === "unknown").length;
+  const relevanceScore = Math.max(42, Math.min(98, Math.round(50 + (met / Math.max(requirements.length, 1)) * 45 - (unknown * 6) - (eligible ? 0 : 8))));
   return {
     opportunity,
     eligible,
@@ -57,6 +59,7 @@ export function assessOpportunity(candidate: CandidateProfile, opportunity: Oppo
     requirements,
     matchedCount: met,
     missing: requirements.filter((requirement) => requirement.status === "missing"),
+    needsInfo: requirements.filter((requirement) => requirement.status === "unknown"),
   };
 }
 
