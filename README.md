@@ -59,7 +59,7 @@ Candidate work stays in the current session and voice recordings are never sent 
 - Radix-based accessible UI primitives
 - Cloudflare-compatible Vinext production build
 - Next.js route handlers for OAuth and backend APIs
-- Zod validation and PDFKit resume output
+- Zod validation and PDF-lib resume output
 
 ## Run locally
 
