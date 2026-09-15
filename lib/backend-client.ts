@@ -1,6 +1,7 @@
 import { opportunities as demoOpportunities } from "@/data/opportunities";
 import type { UserProfile, MatchResult as BackendMatch } from "@/lib/backend/types";
 import type { CandidateProfile, OpportunityMatch } from "@/lib/product-types";
+import { apiUrl } from "@/lib/api-url";
 
 export function candidateToUserProfile(candidate: CandidateProfile): UserProfile {
   const education: UserProfile["education"] = [];
@@ -86,7 +87,7 @@ function backendToProduct(match: BackendMatch): OpportunityMatch {
 
 export async function getBackendMatches(candidate: CandidateProfile) {
   const profile = candidateToUserProfile(candidate);
-  const response = await fetch("/api/matches", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile, options: { max_results: 10, city_preference: profile.location_city, state_preference: profile.location_state } }) });
+  const response = await fetch(apiUrl("/api/matches"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile, options: { max_results: 10, city_preference: profile.location_city, state_preference: profile.location_state } }) });
   if (!response.ok) throw new Error("Backend match request failed");
   const result = await response.json() as { matches: BackendMatch[] };
   return result.matches.map(backendToProduct);

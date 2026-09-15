@@ -31,6 +31,7 @@ export function BhashaHireApp({ session }: { session: AuthSession }) {
   const [pendingTranscript, setPendingTranscript] = useState(profile.transcript);
   const [selectedMatchId, setSelectedMatchId] = useState<string>("");
   const [matches, setMatches] = useState<OpportunityMatch[]>(() => getMatches(profile));
+  const [processingError, setProcessingError] = useState("");
   const [sessionStartedAt] = useState(() => Date.now());
 
   const currentMatch = useMemo(
@@ -62,6 +63,7 @@ export function BhashaHireApp({ session }: { session: AuthSession }) {
     setExpectedProfile(candidate);
     setPendingTranscript(candidate.transcript);
     setSelectedMatchId("");
+    setProcessingError("");
     navigate("processing");
   }, [navigate]);
 
@@ -72,14 +74,20 @@ export function BhashaHireApp({ session }: { session: AuthSession }) {
 
   const useRecording = (transcript: string) => {
     setPendingTranscript(transcript);
+    setProcessingError("");
     navigate("processing");
   };
 
   const finishProcessing = useCallback(async () => {
-    const result = await profileExtractor.extract({ transcript: pendingTranscript, demoCandidateId: profile.id });
-    setProfile(result.profile);
-    setSelectedMatchId("");
-    setScreen("profile");
+    try {
+      setProcessingError("");
+      const result = await profileExtractor.extract({ transcript: pendingTranscript, demoCandidateId: profile.id });
+      setProfile(result.profile);
+      setSelectedMatchId("");
+      setScreen("profile");
+    } catch (error) {
+      setProcessingError(error instanceof Error ? error.message : "Profile extraction failed. Please retry.");
+    }
   }, [pendingTranscript, profile.id]);
 
   const openMatch = (match: OpportunityMatch) => {
@@ -111,7 +119,7 @@ export function BhashaHireApp({ session }: { session: AuthSession }) {
       <div key={screen} className="animate-screen-in">
         {screen === "welcome" && <WelcomeScreen language={language} onStart={start} onDemo={startDemo} />}
         {screen === "voice" && <VoiceScreen language={language} initialMode={captureMode} onBack={() => navigate("welcome")} onUse={useRecording} onDemo={() => startDemo(demoCandidates[0])} />}
-        {screen === "processing" && <ProcessingScreen language={language} onComplete={finishProcessing} />}
+        {screen === "processing" && <ProcessingScreen language={language} error={processingError} onComplete={finishProcessing} onRetry={finishProcessing} onBack={() => navigate("voice")} />}
         {screen === "profile" && <ProfileScreen language={language} profile={profile} onProfileChange={setProfile} onContinue={() => navigate("matches")} />}
         {screen === "matches" && <MatchesScreen language={language} profile={profile} matches={matches} onOpen={openMatch} onPrepare={prepareMatch} onResume={() => navigate("resume")} />}
         {screen === "detail" && currentMatch && <OpportunityDetailScreen language={language} profile={profile} match={currentMatch} onBack={() => navigate("matches")} onPrepare={() => prepareMatch(currentMatch)} onResume={() => navigate("resume")} />}

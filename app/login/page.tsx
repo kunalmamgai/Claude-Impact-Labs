@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, LogIn, LockKeyhole, Mic, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type AuthConfig = { googleConfigured: boolean; demoEnabled: boolean };
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [config, setConfig] = useState<AuthConfig>();
@@ -53,4 +53,8 @@ export default function LoginPage() {
       </div>
     </main>
   );
+}
+
+export default function LoginPage() {
+  return <Suspense fallback={<main className="grid min-h-screen place-items-center bg-[#f4f6f1] text-sm font-bold text-[#196b4f]">Loading BhashaHire…</main>}><LoginContent /></Suspense>;
 }

@@ -10,7 +10,7 @@ export function AuthenticatedApp() {
 
   useEffect(() => {
     fetch("/api/auth/session", { cache: "no-store" })
-      .then((response) => response.json())
+      .then((response) => response.json() as Promise<{ session: AuthSession | null }>)
       .then((result) => {
         const authenticated = (result as { session: AuthSession | null }).session;
         if (!authenticated) window.location.replace("/login");

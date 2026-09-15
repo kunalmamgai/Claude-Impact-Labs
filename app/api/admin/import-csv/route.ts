@@ -13,6 +13,15 @@ export async function POST(request: NextRequest) {
   if (!(file instanceof File) || (type !== "opportunities" && type !== "courses")) return Response.json({ error: "Upload a CSV file and choose opportunities or courses" }, { status: 400 });
   if (file.size > 5_000_000) return Response.json({ error: "CSV file must be smaller than 5 MB" }, { status: 400 });
   try {
+    const backendUrl = process.env.BACKEND_URL?.replace(/\/$/, "");
+    if (backendUrl && process.env.ADMIN_API_KEY) {
+      const backendForm = new FormData();
+      backendForm.append("file", file);
+      backendForm.append("type", type);
+      const backendResponse = await fetch(`${backendUrl}/api/admin/import-csv`, { method: "POST", headers: { "x-admin-api-key": process.env.ADMIN_API_KEY }, body: backendForm });
+      const result = await backendResponse.json();
+      return Response.json(result, { status: backendResponse.status });
+    }
     const rows = await importSnapshot(type, await file.text());
     recordMetric("csv_imports");
     return Response.json({ status: "ok", rows_imported: rows, type });

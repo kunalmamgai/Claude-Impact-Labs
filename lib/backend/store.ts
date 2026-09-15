@@ -1,7 +1,7 @@
 import { list, numberOrUndefined, parseCsv, truthy } from "@/lib/backend/csv";
 import type { Course, Opportunity } from "@/lib/backend/types";
-import defaultOpportunitiesUrl from "@/data/snapshots/opportunities.csv?url";
-import defaultCoursesUrl from "@/data/snapshots/courses.csv?url";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 const opportunityHeaders = ["portal", "source_listing_id", "source_url", "title", "employer", "opportunity_type", "city", "state", "education_required", "certifications_required", "skills_required", "min_experience_months", "age_min", "age_max", "stipend_or_salary", "eligibility_raw", "posted_on", "closing_on", "snapshot_date", "is_active_in_snapshot"];
 const courseHeaders = ["course_id", "course_name", "provider", "city", "state", "qualification_targeted", "skills_covered", "duration_weeks", "fees_inr", "contact_info", "source_url", "snapshot_date"];
@@ -34,16 +34,16 @@ export function parseCourses(text: string) {
   })).filter((item) => item.course_id && item.course_name);
 }
 
-async function loadAsset(url: string, origin: string) {
-  const response = await fetch(new URL(url, origin));
-  if (!response.ok) throw new Error(`Snapshot asset could not be loaded (${response.status})`);
-  return response.text();
+async function loadSnapshot(filename: string) {
+  const snapshotDirectory = process.env.SNAPSHOT_DIR || "./data/snapshots";
+  const snapshotPath = path.resolve(/* turbopackIgnore: true */ process.cwd(), snapshotDirectory, filename);
+  return readFile(snapshotPath, "utf8");
 }
 
-export async function getSnapshots(origin: string) {
-  if (!importedOpportunities) importedOpportunities = parseOpportunities(await loadAsset(defaultOpportunitiesUrl, origin));
-  if (!importedCourses) importedCourses = parseCourses(await loadAsset(defaultCoursesUrl, origin));
-  return { opportunities: importedOpportunities, courses: importedCourses };
+export async function getSnapshots() {
+  if (!importedOpportunities) importedOpportunities = parseOpportunities(await loadSnapshot("opportunities.csv"));
+  if (!importedCourses) importedCourses = parseCourses(await loadSnapshot("courses.csv"));
+  return { opportunities: importedOpportunities!, courses: importedCourses! };
 }
 
 export async function importSnapshot(type: "opportunities" | "courses", csv: string) {

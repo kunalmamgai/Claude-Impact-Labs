@@ -57,7 +57,7 @@ Candidate work stays in the current session and voice recordings are never sent 
 - Tailwind CSS
 - Lucide icons
 - Radix-based accessible UI primitives
-- Cloudflare-compatible Vinext production build
+- Vercel-compatible Next.js production build and a standalone Render API service
 - Next.js route handlers for OAuth and backend APIs
 - Zod validation and PDF-lib resume output
 
@@ -86,6 +86,22 @@ Production verification:
 ```bash
 npm run build
 ```
+
+Run the standalone Render-compatible backend locally on port 4000:
+
+```bash
+npm run backend
+```
+
+Set `NEXT_PUBLIC_BACKEND_URL=http://localhost:4000` and `BACKEND_URL=http://localhost:4000` when testing the split deployment locally. Without these values, the frontend uses its same-origin Next.js API routes.
+
+## Deploy
+
+- Render reads [`render.yaml`](render.yaml) and starts the API with `npm run backend`.
+- Vercel reads [`vercel.json`](vercel.json) and builds the Next.js frontend with `npm run build`.
+- On Render set `FRONTEND_ORIGIN` to the final Vercel URL and keep `ADMIN_API_KEY` secret.
+- On Vercel set `NEXT_PUBLIC_BACKEND_URL` and `BACKEND_URL` to the final Render service URL. Set the same `ADMIN_API_KEY` on both services so the authenticated counsellor CSV proxy can reach Render.
+- For Google sign-in, configure `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `AUTH_SECRET`, and `GOOGLE_REDIRECT_URI=https://<vercel-domain>/api/auth/google/callback` on Vercel, then add that exact redirect URI in Google Cloud Console.
 
 ## Backend API
 

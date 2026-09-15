@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AppLanguage, CandidateProfile } from "@/lib/product-types";
 import { candidateToUserProfile } from "@/lib/backend-client";
+import { apiUrl } from "@/lib/api-url";
 
 type ResumeLanguage = "bilingual" | "english" | "hindi";
 
@@ -32,7 +33,7 @@ export function ResumeScreen({ language, profile, onBack, onInterview, onComplet
   const downloadPdf = async () => {
     setDownloading(true);
     try {
-      const response = await fetch("/api/resume/generate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile: candidateToUserProfile(profile), language: resumeLanguage }) });
+      const response = await fetch(apiUrl("/api/resume/generate"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile: candidateToUserProfile(profile), language: resumeLanguage }) });
       if (!response.ok) throw new Error("PDF generation failed");
       const url = URL.createObjectURL(await response.blob());
       const link = document.createElement("a"); link.href = url; link.download = `${profile.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-resume.pdf`; link.click();
