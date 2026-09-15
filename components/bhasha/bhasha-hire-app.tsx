@@ -39,6 +39,7 @@ export function BhashaHireApp() {
   }, [currentMatch]);
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [screen]);
+  useEffect(() => { document.documentElement.lang = language === "hi" ? "hi" : "en"; }, [language]);
 
   const start = useCallback((mode: "voice" | "type" = "voice") => {
     setCaptureMode(mode);
