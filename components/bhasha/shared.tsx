@@ -30,6 +30,11 @@ export const copy = {
   },
 };
 
+const mobileCopy = {
+  en: { start: "Start", profile: "Profile", matches: "Jobs", resume: "Resume", prep: "Prep", counsellor: "Counsellor" },
+  hi: { start: "शुरू", profile: "प्रोफ़ाइल", matches: "अवसर", resume: "रिज़्यूमे", prep: "इंटरव्यू", counsellor: "काउंसलर" },
+};
+
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-2.5" aria-label="BhashaHire">
@@ -72,7 +77,7 @@ export function AppHeader({ language, screen, initials, session, onLanguage, onN
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = screen === item.screen || (screen === "detail" && item.screen === "matches");
-          return <button key={item.screen} onClick={() => onNavigate(item.screen)} className={cn("flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl text-[10px] font-bold", active ? "bg-[#e9f2ea] text-[#196b4f]" : "text-[#75847e]")}><Icon className="size-[18px]" /><span>{copy[language][item.key]}</span></button>;
+          return <button key={item.screen} onClick={() => onNavigate(item.screen)} aria-label={copy[language][item.key]} className={cn("flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 text-[10px] font-bold", active ? "bg-[#e9f2ea] text-[#196b4f]" : "text-[#75847e]")}><Icon className="size-[18px]" /><span className="w-full truncate text-center">{mobileCopy[language][item.key]}</span></button>;
         })}
       </nav>
     </>

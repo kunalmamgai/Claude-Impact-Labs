@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, Check, FileAudio, Keyboard, LockKeyhole, Mic, RotateCcw, Square, Trash2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, BadgeCheck, BriefcaseBusiness, Check, Clock3, FileAudio, GraduationCap, Keyboard, LockKeyhole, MapPin, Mic, RotateCcw, Square, Trash2, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -205,7 +205,7 @@ export function VoiceScreen({ language, initialMode, onBack, onUse, onDemo }: { 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-28 pt-7 sm:px-7 sm:pt-10 lg:px-12">
       <button onClick={onBack} className="mb-5 inline-flex min-h-10 items-center gap-2 rounded-xl pr-3 text-sm font-extrabold text-[#557067] hover:bg-[#e9f1ea]"><ArrowLeft className="size-4" />{hi ? "वापस" : "Back"}</button>
-      <div className="mb-7 text-center"><p className="text-xs font-black uppercase tracking-[.12em] text-[#5e8174]">{hi ? "कदम 1 / 4 · आपकी कहानी" : "Step 1 of 4 · Your story"}</p><h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[-.04em] sm:text-5xl">{hi ? "अपने बारे में बताइए" : "Tell us about yourself"}</h1><p className="mx-auto mt-3 max-w-2xl text-[15px] leading-7 text-[#6b7c75]">{hi ? "आप सामान्य तरीके से बोल सकते हैं—सही शब्द चुनने या English बोलने की चिंता न करें।" : "Speak the way you normally do—there’s no need to find formal words or speak only in English."}</p></div>
+      <div className="mb-7 text-center"><p className="text-xs font-black uppercase tracking-[.12em] text-[#5e8174]">{hi ? "कदम 1 / 4 · आपकी कहानी" : "Step 1 of 4 · Your story"}</p><h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[-.04em] sm:text-5xl">{hi ? "अपने बारे में बताइए" : "Tell us about yourself"}</h1><p className="mx-auto mt-3 max-w-xl text-[15px] leading-7 text-[#6b7c75]">{hi ? "अपनी भाषा में, जैसे आप रोज़ बोलते हैं।" : "Use your own language and everyday words."}</p></div>
 
       <div className="mb-5 flex justify-center"><div className="inline-grid grid-cols-2 rounded-xl bg-[#e9efea] p-1"><button disabled={status === "recording"} onClick={() => setMode("voice")} className={cn("flex min-h-10 items-center gap-2 rounded-lg px-4 text-sm font-extrabold disabled:cursor-not-allowed disabled:opacity-60", mode === "voice" ? "bg-white text-[#17332d] shadow-sm" : "text-[#66766f]")}><Mic className="size-4" />{hi ? "बोलकर" : "By voice"}</button><button disabled={status === "recording"} onClick={() => setMode("type")} className={cn("flex min-h-10 items-center gap-2 rounded-lg px-4 text-sm font-extrabold disabled:cursor-not-allowed disabled:opacity-60", mode === "type" ? "bg-white text-[#17332d] shadow-sm" : "text-[#66766f]")}><Keyboard className="size-4" />{hi ? "लिखकर" : "By typing"}</button></div></div>
 
@@ -213,7 +213,17 @@ export function VoiceScreen({ language, initialMode, onBack, onUse, onDemo }: { 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,.7fr)]">
           <section className="overflow-hidden rounded-[28px] border border-[#d8e2d9] bg-white shadow-[0_24px_70px_#29483d10]">
             <div className="border-b border-[#e0e7e0] p-5 sm:p-7">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-lg font-black">{hi ? "1-मिनट का परिचय" : "Your 1-minute introduction"}</h2><p className="mt-1 text-sm text-[#75857f]">{hi ? "पढ़ाई · हुनर · अनुभव · जगह · पसंद का काम" : "Education · skills · experience · location · preferred work"}</p></div><div role="group" aria-label="Recording language" className="flex rounded-xl bg-[#f0f4ef] p-1">{(["hindi", "english", "hinglish"] as CaptureLanguage[]).map((item) => <button key={item} disabled={status === "recording"} onClick={() => setCaptureLanguage(item)} className={cn("min-h-9 rounded-lg px-3 text-xs font-bold capitalize disabled:cursor-not-allowed disabled:opacity-60", captureLanguage === item ? "bg-white text-[#196b4f] shadow-sm" : "text-[#6d7d76]")}>{item === "hindi" ? "हिंदी" : item === "english" ? "English" : "Hinglish"}</button>)}</div></div>
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-lg font-black">{hi ? "1-मिनट का परिचय" : "Your 1-minute introduction"}</h2><p className="mt-1 text-sm text-[#75857f]">{hi ? "जो याद आए, उसी क्रम में बताइए" : "Share these in any order"}</p></div><div role="group" aria-label="Recording language" className="flex rounded-xl bg-[#f0f4ef] p-1">{(["hindi", "english", "hinglish"] as CaptureLanguage[]).map((item) => <button key={item} disabled={status === "recording"} onClick={() => setCaptureLanguage(item)} className={cn("min-h-9 rounded-lg px-3 text-xs font-bold capitalize disabled:cursor-not-allowed disabled:opacity-60", captureLanguage === item ? "bg-white text-[#196b4f] shadow-sm" : "text-[#6d7d76]")}>{item === "hindi" ? "हिंदी" : item === "english" ? "English" : "Hinglish"}</button>)}</div></div>
+              <div className="mt-5 flex flex-wrap gap-2" aria-label={hi ? "बोलने के विषय" : "Things you can talk about"}>
+                {[
+                  { icon: GraduationCap, en: "Education", hi: "पढ़ाई" },
+                  { icon: Wrench, en: "Skills", hi: "हुनर" },
+                  { icon: BadgeCheck, en: "Certificates", hi: "सर्टिफिकेट" },
+                  { icon: MapPin, en: "Location", hi: "जगह" },
+                  { icon: BriefcaseBusiness, en: "Work you’ve done", hi: "किया हुआ काम" },
+                  { icon: Clock3, en: "Availability", hi: "उपलब्धता" },
+                ].map((prompt) => { const Icon = prompt.icon; return <span key={prompt.en} className="inline-flex items-center gap-1.5 rounded-lg border border-[#dbe4dc] bg-[#f7f9f6] px-2.5 py-1.5 text-xs font-bold text-[#536c62]"><Icon className="size-3.5 text-[#196b4f]" />{hi ? prompt.hi : prompt.en}</span>; })}
+              </div>
             </div>
             <div className="flex min-h-[350px] flex-col items-center justify-center p-6 text-center sm:p-9">
               <div className={cn("relative grid size-32 place-items-center rounded-full transition", status === "recording" ? "bg-[#e3f0e8]" : "bg-[#eef4ef]")}>
