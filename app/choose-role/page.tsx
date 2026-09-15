@@ -11,7 +11,7 @@ export default function ChooseRolePage() {
   const [session, setSession] = useState<AuthSession>();
   const [busy, setBusy] = useState<AppRole>();
   const [error, setError] = useState("");
-  useEffect(() => { fetch("/api/auth/session", { cache: "no-store" }).then((response) => response.json()).then((result) => { if (!result.session) window.location.replace("/login"); else setSession(result.session); }); }, []);
+  useEffect(() => { fetch("/api/auth/session", { cache: "no-store" }).then((response) => response.json()).then((result) => { const authenticated = (result as { session: AuthSession | null }).session; if (!authenticated) window.location.replace("/login"); else setSession(authenticated); }); }, []);
   const choose = async (role: AppRole) => {
     setBusy(role); setError("");
     const response = await fetch("/api/auth/role", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ role }) });

@@ -59,8 +59,8 @@ export function CounsellorScreen({ language, profile, expectedProfile, matches, 
     setImporting(true); setImportStatus("");
     const form = new FormData(); form.append("file", file); form.append("type", snapshotType);
     const response = await fetch("/api/admin/import-csv", { method: "POST", body: form });
-    const result = await response.json();
-    if (response.ok) setImportStatus(`${result.rows_imported} ${result.type} rows imported. New matches will use this snapshot.`);
+    const result = await response.json() as { rows_imported?: number; type?: string; error?: string };
+    if (response.ok && result.rows_imported !== undefined && result.type) setImportStatus(`${result.rows_imported} ${result.type} rows imported. New matches will use this snapshot.`);
     else setImportStatus(result.error || "Import failed");
     setImporting(false); if (fileInput.current) fileInput.current.value = "";
   };

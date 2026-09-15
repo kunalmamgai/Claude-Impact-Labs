@@ -12,9 +12,10 @@ export function AuthenticatedApp() {
     fetch("/api/auth/session", { cache: "no-store" })
       .then((response) => response.json())
       .then((result) => {
-        if (!result.session) window.location.replace("/login");
-        else if (!result.session.role) window.location.replace("/choose-role");
-        else setSession(result.session);
+        const authenticated = (result as { session: AuthSession | null }).session;
+        if (!authenticated) window.location.replace("/login");
+        else if (!authenticated.role) window.location.replace("/choose-role");
+        else setSession(authenticated);
       })
       .catch(() => window.location.replace("/login?error=session_check_failed"));
   }, []);

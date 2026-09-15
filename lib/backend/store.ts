@@ -47,7 +47,12 @@ export async function getSnapshots(origin: string) {
 }
 
 export async function importSnapshot(type: "opportunities" | "courses", csv: string) {
-  if (type === "opportunities") importedOpportunities = parseOpportunities(csv);
-  else importedCourses = parseCourses(csv);
-  return type === "opportunities" ? importedOpportunities.length : importedCourses.length;
+  if (type === "opportunities") {
+    const opportunities = parseOpportunities(csv);
+    importedOpportunities = opportunities;
+    return opportunities.length;
+  }
+  const courses = parseCourses(csv);
+  importedCourses = courses;
+  return courses.length;
 }

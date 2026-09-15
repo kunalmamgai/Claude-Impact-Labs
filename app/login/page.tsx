@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, LogIn, LockKeyhole, Mic, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+
+type AuthConfig = { googleConfigured: boolean; demoEnabled: boolean };
 
 export default function LoginPage() {
   const router = useRouter();
-  const [config, setConfig] = useState<{ googleConfigured: boolean; demoEnabled: boolean }>();
+  const searchParams = useSearchParams();
+  const [config, setConfig] = useState<AuthConfig>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => { fetch("/api/auth/config").then((response) => response.json()).then(setConfig).catch(() => setError("The sign-in service could not be reached.")); }, []);
+  useEffect(() => { fetch("/api/auth/config").then((response) => response.json()).then((result) => setConfig(result as AuthConfig)).catch(() => setError("The sign-in service could not be reached.")); }, []);
 
   const demoLogin = async () => {
     setBusy(true);
@@ -20,7 +23,7 @@ export default function LoginPage() {
     else { setBusy(false); setError("Local demo sign-in is unavailable."); }
   };
 
-  const queryError = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("error") : null;
+  const queryError = searchParams.get("error");
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_20%_10%,#ffffff_0,#f5f7f1_42%,#e8eee8_100%)] px-4 py-10 text-[#17332d] sm:px-7">
       <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl overflow-hidden rounded-[32px] border border-[#d7e2d9] bg-white shadow-[0_35px_100px_#17332d1a] lg:grid-cols-[1.05fr_.95fr]">
