@@ -31,7 +31,8 @@ function fromBase64url(value: string) {
 }
 
 async function hmac(value: string) {
-  const secret = process.env.AUTH_SECRET || "local-development-secret-change-me";
+  const secret = process.env.AUTH_SECRET || (process.env.NODE_ENV === "production" ? "" : "local-development-secret-change-me");
+  if (!secret) throw new Error("AUTH_SECRET is required in production");
   const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   return base64url(new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(value))));
 }
